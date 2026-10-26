@@ -18,6 +18,10 @@ const required = [
   'function exportResponsesCsv()',
   'function recordTask(id)',
   'function addDiary()',
+  'function editResponse(id)',
+  'function editDiary(id)',
+  "else if(a==='delete-response')",
+  "else if(a==='delete-diary')",
 ];
 for (const marker of required) assert.ok(html.includes(marker), 'missing app contract: ' + marker);
 console.log('PASS: backup, client deletion, session, response, and diary contracts are present');
