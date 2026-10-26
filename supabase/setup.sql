@@ -275,10 +275,16 @@ grant execute on function public.accept_speech_rehab_invitation(text) to authent
 
 -- Split write policies from read policies so each role has one policy per action.
 drop policy if exists memberships_owner_manage on public.clinic_memberships;
+drop policy if exists memberships_owner_insert on public.clinic_memberships;
+drop policy if exists memberships_owner_update on public.clinic_memberships;
+drop policy if exists memberships_owner_delete on public.clinic_memberships;
 create policy memberships_owner_insert on public.clinic_memberships for insert to authenticated with check (private.is_clinic_owner(clinic_id));
 create policy memberships_owner_update on public.clinic_memberships for update to authenticated using (private.is_clinic_owner(clinic_id)) with check (private.is_clinic_owner(clinic_id));
 create policy memberships_owner_delete on public.clinic_memberships for delete to authenticated using (private.is_clinic_owner(clinic_id));
 drop policy if exists client_access_clinician_manage on public.client_access;
+drop policy if exists client_access_clinician_insert on public.client_access;
+drop policy if exists client_access_clinician_update on public.client_access;
+drop policy if exists client_access_clinician_delete on public.client_access;
 create policy client_access_clinician_insert on public.client_access for insert to authenticated with check (private.can_manage_client_access(client_id));
 create policy client_access_clinician_update on public.client_access for update to authenticated using (private.can_manage_client_access(client_id)) with check (private.can_manage_client_access(client_id));
 create policy client_access_clinician_delete on public.client_access for delete to authenticated using (private.can_manage_client_access(client_id));
