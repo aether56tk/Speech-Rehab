@@ -35,7 +35,6 @@ const required = [
   'async function applySession(session)',
   'function normalizeWorkspace(value)',
   'async function resendConfirmation()',
-  "authRedirectEmailTo:'https://aether56tk.github.io/Speech-Rehab/'",
   'SUPABASE_PUBLISHABLE_KEY',
   "from('user_workspaces').upsert",
 ];
