@@ -6,6 +6,9 @@ const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/i);
 assert.ok(scriptMatch, 'index.html should contain the application script');
 new Function(scriptMatch[1]);
 console.log('PASS: app JavaScript parses');
+const clinicJs = readFileSync(new URL('../clinic.js', import.meta.url), 'utf8');
+new Function(clinicJs);
+console.log('PASS: clinic workspace JavaScript parses');
 
 const required = [
   'function importBackup()',
@@ -32,6 +35,9 @@ const required = [
   'async function applySession(session)',
   'SUPABASE_PUBLISHABLE_KEY',
   "from('user_workspaces').upsert",
+  'function renderClinicTools',
+  'create_speech_rehab_invitation',
+  'accept_speech_rehab_invitation',
 ];
 for (const marker of required) assert.ok(html.includes(marker), 'missing app contract: ' + marker);
 console.log('PASS: backup, client profiles, session, response, diary, auth, and cloud-sync contracts are present');
