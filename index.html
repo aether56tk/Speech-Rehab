@@ -40,6 +40,7 @@
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
 <script>
+const $=id=>document.getElementById(id);
 const SUPABASE_URL="https://xbyzcyzpszkpapfilzoj.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_Yt2V_OIdwrfBVb_YVXCugA_VMbMoGXc";
 const supabaseClient=window.supabase?.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
@@ -114,7 +115,7 @@ const goals=[
 {name:'Social communication',target:'The client will practise a selected social communication skill in a structured or natural interaction.',techniques:['Modeling','Visual scripts','Prompting','Naturalistic teaching'],activities:['Turn-taking games','Greeting routines','Requesting help','Conversational play']}
 ];
 let currentPage='home', selectedGoal=goals[0].name, selectedClient='all', selectedResponseTask='', selectedClientDetail='';
-const $=id=>document.getElementById(id);
+
 function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function clientName(id){return db.clients.find(c=>c.id===id)?.name||'Unassigned'}
 function showNotice(s){$('notice').textContent=s;$('notice').classList.remove('hidden');setTimeout(()=>$('notice').classList.add('hidden'),3000)}
