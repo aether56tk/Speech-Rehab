@@ -15,12 +15,16 @@ If GitHub Pages is enabled: https://aether56tk.github.io/Speech-Rehab/
 - JSON backup export and restore
 - CSV export of response records
 - Responsive layout and basic PWA/offline shell
+- Supabase email/password sign-up and sign-in
+- Per-account cloud workspace sync with row-level security (RLS)
+- Profile creation on sign-up and a private workspace row per account
+- Cloud sync status and sign-out
 
 ## Run without Android Studio
-Open the GitHub Pages URL in a browser. For local testing, serve the repository root through any static HTTP server. The app uses browser localStorage, which is scoped to the browser and origin.
+Open the GitHub Pages URL in a browser. For local testing, serve the repository root through any static HTTP server. The app now uses Supabase Auth and a private `user_workspaces` row for signed-in accounts. Local storage is retained as a local cache, but cloud data is loaded after sign-in. Supabase project URL and publishable key are configured in `index.html`; publishable keys are intended for browser use when RLS is correctly configured. Never add a service-role or secret key to the frontend.
 
 ## Product boundary
-This is a rehabilitation management prototype, not an assessment, diagnostic, or autonomous treatment system. Goal/technique/activity recommendations are examples; a qualified clinician must review and individualize them. Use fictional data only until authentication, authorization, encryption, secure persistence, backup protection, and a suitable privacy review have been implemented.
+This is a rehabilitation management prototype, not an assessment, diagnostic, or autonomous treatment system. Goal/technique/activity recommendations are examples; a qualified clinician must review and individualize them. Use fictional data only until your clinic's privacy requirements and operational controls are reviewed. The current cloud model isolates each account's workspace; it does not yet implement shared clinic workspaces or parent/student access to selected clients. RLS restricts workspace rows to the signed-in account. This prototype is not a substitute for a full clinical-record compliance review.
 
 ## Quality process
 This project uses a small, inspectable workflow inspired by gstack's separation of product planning, design review, engineering review, QA, and security review. It does not install or copy gstack runtime code.
@@ -38,4 +42,5 @@ Enable **Settings → Pages → Deploy from a branch → main → /(root)**. The
 1. Add stable multi-record session templates and editing.
 2. Add a restore/import preview and clear merge/replace options.
 3. Split the prototype into maintainable modules and add automated browser tests.
-4. Add proper sign-in and server-side persistent storage only after privacy and access rules are designed.
+4. Add clinic workspaces with explicit therapist/student/parent membership and client-level permissions.
+5. Add automated browser tests, recovery flows, and a privacy/security review before real patient use.
