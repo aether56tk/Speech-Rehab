@@ -122,3 +122,78 @@ drop policy if exists clinical_records_delete_clinician on public.clinical_recor
 create policy clinical_records_delete_clinician on public.clinical_records for delete to authenticated using (
  exists(select 1 from public.clinic_memberships m where m.clinic_id=clinical_records.clinic_id and m.user_id=(select auth.uid()) and m.status='active' and m.role='therapist')
 );
+
+
+// Private personal workspace storage used by the app's existing dashboard.
+create table if not exists public.profiles (
+ id uuid primary key references auth.users(id) on delete cascade,
+ display_name text not null default '',
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now()
+);
+alter table public.profiles enable row level security;
+drop policy if exists profiles_select_own on public.profiles;
+create policy profiles_select_own on public.profiles for select to authenticated using ((select auth.uid())=id);
+drop policy if exists profiles_insert_own on public.profiles;
+create policy profiles_insert_own on public.profiles for insert to authenticated with check ((select auth.uid())=id);
+drop policy if exists profiles_update_own on public.profiles;
+create policy profiles_update_own on public.profiles for update to authenticated using ((select auth.uid())=id) with check ((select auth.uid())=id);
+grant select,insert,update on public.profiles to authenticated;
+
+create table if not exists public.user_workspaces (
+ user_id uuid primary key references auth.users(id) on delete cascade,
+ data jsonb not null default '{"clients":[],"tasks":[],"responses":[],"diary":[]}'::jsonb,
+ updated_at timestamptz not null default now()
+);
+alter table public.user_workspaces enable row level security;
+drop policy if exists workspace_select_own on public.user_workspaces;
+create policy workspace_select_own on public.user_workspaces for select to authenticated using ((select auth.uid())=user_id);
+drop policy if exists workspace_insert_own on public.user_workspaces;
+create policy workspace_insert_own on public.user_workspaces for insert to authenticated with check ((select auth.uid())=user_id);
+drop policy if exists workspace_update_own on public.user_workspaces;
+create policy workspace_update_own on public.user_workspaces for update to authenticated using ((select auth.uid())=user_id) with check ((select auth.uid())=user_id);
+grant select,insert,update on public.user_workspaces to authenticated;
+
+create or replace function public.handle_speech_rehab_new_user()
+returns trigger language plpgsql security definer set search_path=''
+as $$
+begin
+ insert into public.profiles(id,display_name) values(new.id,coalesce(new.raw_user_meta_data->>'display_name','')) on conflict(id) do nothing;
+ insert into public.user_workspaces(user_id,data) values(new.id,'{"clients":[],"tasks":[],"responses":[],"diary":[]}'::jsonb) on conflict(user_id) do nothing;
+ return new;
+end;
+$$;
+revoke all on function public.handle_speech_rehab_new_user() from public,anon,authenticated;
+drop trigger if exists on_speech_rehab_user_created on auth.users;
+create trigger on_speech_rehab_user_created after insert on auth.users for each row execute procedure public.handle_speech_rehab_new_user();
+
+create index if not exists clinic_memberships_user_idx on public.clinic_memberships(user_id);
+create index if not exists clinic_invitations_clinic_idx on public.clinic_invitations(clinic_id);
+create index if not exists clinic_invitations_invited_by_idx on public.clinic_invitations(invited_by);
+create index if not exists clinic_clients_clinic_idx on public.clinic_clients(clinic_id);
+create index if not exists clinic_clients_created_by_idx on public.clinic_clients(created_by);
+create index if not exists client_access_user_idx on public.client_access(user_id);
+create index if not exists client_access_granted_by_idx on public.client_access(granted_by);
+create index if not exists clinical_records_client_idx on public.clinical_records(client_id);
+create index if not exists clinical_records_clinic_idx on public.clinical_records(clinic_id);
+create index if not exists clinical_records_created_by_idx on public.clinical_records(created_by);
+create index if not exists clinics_created_by_idx on public.clinics(created_by);
+
+-- Public RPC wrappers are invoker functions. The checked implementations live in private.
+create or replace function public.create_speech_rehab_clinic(p_name text)
+returns uuid language sql security invoker set search_path=''
+as $$ select private.create_speech_rehab_clinic(p_name) $$;
+revoke all on function public.create_speech_rehab_clinic(text) from public,anon;
+grant execute on function public.create_speech_rehab_clinic(text) to authenticated;
+
+create or replace function public.create_speech_rehab_invitation(p_clinic_id uuid,p_email text,p_role text)
+returns text language sql security invoker set search_path=''
+as $$ select private.create_speech_rehab_invitation(p_clinic_id,p_email,p_role) $$;
+revoke all on function public.create_speech_rehab_invitation(uuid,text,text) from public,anon;
+grant execute on function public.create_speech_rehab_invitation(uuid,text,text) to authenticated;
+
+create or replace function public.accept_speech_rehab_invitation(p_token text)
+returns uuid language sql security invoker set search_path=''
+as $$ select private.accept_speech_rehab_invitation(p_token) $$;
+revoke all on function public.accept_speech_rehab_invitation(text) from public,anon;
+grant execute on function public.accept_speech_rehab_invitation(text) to authenticated;
