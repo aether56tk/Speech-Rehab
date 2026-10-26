@@ -1,4 +1,4 @@
-const CACHE = 'speech-rehab-static-v4';
+const CACHE = 'speech-rehab-static-v5';
 const ASSETS = ['./', './index.html', './manifest.json', './clinic.js'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
