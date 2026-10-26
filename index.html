@@ -73,7 +73,7 @@ async function handleAuthSubmit(e){
  $('auth-status').textContent='Connecting securely to Supabase…';
  try{
   if(authMode==='signup'){
-   const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{display_name:displayName},emailRedirectTo:window.location.origin+window.location.pathname}});
+   const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{display_name:displayName}}});
    if(error)throw error;
    if(data.session){
     $('auth-status').textContent='Account created successfully. Loading your workspace…';
