@@ -13,7 +13,7 @@ const required = [
   "confirm('Import this backup",
   "else if(a==='import-backup')importBackup()",
   "db.responses=db.responses.filter(r=>r.clientId!==id)",
-  "db.diary=db.diary.filter(t=>t.clientId!==id)",
+  "db.diary=db.diary.filter(n=>n.clientId!==id)",
   'function requireClients()',
   'function exportResponsesCsv()',
   'function recordTask(id)',
