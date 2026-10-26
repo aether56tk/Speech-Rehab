@@ -91,6 +91,54 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
  .item{padding:13px}
  .clinic-layout{grid-template-columns:1fr}
 }
+/* Goal Suggestions library inspired by the supplied Stitch clinical workspace */
+.goal-workspace{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.85fr);gap:18px;align-items:start}
+.clinical-notice{display:flex;gap:12px;align-items:flex-start;padding:15px 17px;margin:0 0 20px;background:#e3f7ff;border:1px solid #cde7f1;border-radius:9px;color:#142d35}
+.clinical-notice .notice-icon{display:grid;place-items:center;flex:0 0 28px;height:28px;border-radius:6px;background:#075e50;color:#fff;font-weight:800}
+.clinical-notice strong{display:block;font-size:12px;letter-spacing:.02em;text-transform:uppercase;color:#075e50}
+.clinical-notice p{margin:3px 0 0;font-size:13px;line-height:1.55;color:#3f5962}
+.goal-library,.goal-detail-panel{min-width:0;background:#fff;border:1px solid #dce7e7;border-radius:11px;padding:19px;box-shadow:0 1px 3px rgba(20,45,53,.04)}
+.goal-library-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}
+.eyebrow{font-size:10px;letter-spacing:.09em;font-weight:800;color:#647782;margin-bottom:7px}
+.goal-library-heading h2{font-size:19px;letter-spacing:-.45px;margin:0 0 4px;color:#142d35}
+.goal-library-heading p{margin:0;font-size:12px}
+.count-chip{font-size:11px;font-weight:700;white-space:nowrap;padding:5px 8px;border-radius:5px;background:#e5f6f1;color:#075e50}
+.goal-search{display:flex;align-items:center;gap:10px;border:1px solid #dce7e7;border-radius:7px;padding:0 12px;margin:14px 0 12px;min-height:42px;color:#647782}
+.goal-search:focus-within{border-color:#0d8a72;box-shadow:0 0 0 3px rgba(13,138,114,.12)}
+.goal-search input{width:100%;min-width:0;border:0;outline:0!important;box-shadow:none!important;background:transparent;color:#142d35;font:inherit;font-size:13px}
+.goal-filter-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.goal-filter{border:1px solid #dce7e7;border-radius:5px;background:#fff;color:#526973;padding:7px 10px;font-size:11px;font-weight:650}
+.goal-filter:hover{background:#f5f8f8}
+.goal-filter.active{background:#075e50;border-color:#075e50;color:#fff}
+.goal-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.goal-library-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:8px;min-width:0;padding:13px;border:1px solid #dce7e7;border-radius:8px;background:#fff;color:#142d35;transition:border-color .15s,background .15s,box-shadow .15s}
+.goal-library-card:hover{border-color:#8fc7b8;box-shadow:0 3px 10px rgba(20,45,53,.05)}
+.goal-library-card.selected{border-color:#0d8a72;background:#f2fbf8;box-shadow:inset 0 0 0 1px #0d8a72}
+.goal-card-meta{font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;color:#087563}
+.goal-library-card strong{font-size:13px;line-height:1.35}
+.goal-card-target{font-size:11px;line-height:1.5;color:#647782;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.goal-card-footer{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;margin-top:auto;padding-top:8px;border-top:1px solid #e8efef;font-size:10px;font-weight:650;color:#526973}
+.goal-card-footer span{font-size:16px;color:#087563}
+.goal-detail-panel{position:sticky;top:16px;padding:19px}
+.goal-detail-icon{display:grid;place-items:center;width:42px;height:42px;margin:3px 0 12px;border-radius:8px;background:#e5f6f1;color:#075e50;font-size:25px}
+.goal-detail-panel h2{font-size:21px;line-height:1.25;letter-spacing:-.55px;margin:10px 0;color:#142d35}
+.goal-detail-target{font-size:13px;line-height:1.65;color:#526973;margin:0}
+.detail-section{border-top:1px solid #e8efef;margin-top:18px;padding-top:15px}
+.detail-section h3{font-size:13px;margin:0 0 10px;color:#142d35}
+.technique-list{display:flex;gap:6px;flex-wrap:wrap}
+.technique-chip{padding:5px 8px;border:1px solid #dce7e7;border-radius:5px;background:#f7faf9;color:#3f5962;font-size:11px}
+.suggested-activities{display:flex;flex-direction:column}
+.suggested-activity{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #e8efef}
+.suggested-activity:last-child{border-bottom:0}
+.suggested-activity>div{min-width:0;display:flex;flex-direction:column;gap:3px}
+.suggested-activity strong{font-size:12px;overflow-wrap:anywhere}
+.suggested-activity span{font-size:10px;color:#647782}
+.suggested-activity .smallbtn{flex:0 0 auto;color:#075e50}
+.goal-detail-footer{border-top:1px solid #e8efef;padding-top:14px;margin-top:8px}
+.goal-detail-footer p{font-size:11px;line-height:1.55}
+.goal-detail-footer .btn{width:100%}
+@media(max-width:1100px){.goal-workspace{grid-template-columns:minmax(0,1fr)}.goal-detail-panel{position:static}.goal-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.goal-library,.goal-detail-panel{padding:14px}.goal-card-grid{grid-template-columns:1fr}.goal-library-heading{flex-direction:column}.goal-detail-panel h2{font-size:19px}}
 </style>
 </head>
 <body class="auth-required">
@@ -321,10 +369,37 @@ $('page-sessions').innerHTML=header('Sessions & plan','Organize activities and m
 taskList(db.tasks.filter(t=>selectedClient==='all'||t.clientId===selectedClient),true);
 }
 function renderGoals(){
-const g=goals.find(x=>x.name===selectedGoal)||goals[0];
-$('page-goals').innerHTML=header('Goal suggestions','Review and personalize before adding to a plan')+
-'<div class="field"><label>Communication goal</label><select id="goal-select">'+goals.map(x=>'<option '+(x.name===selectedGoal?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></div>'+
-'<div class="card"><span class="pill">Suggested goal</span><h2 style="margin-top:10px">'+esc(g.name)+'</h2><p>'+esc(g.target)+'</p><div class="muted">Suggested techniques</div><div class="actions">'+g.techniques.map(x=>'<span class="pill">'+esc(x)+'</span>').join('')+'</div><h3 class="section-title">Suggested activities</h3>'+g.activities.map((a,i)=>'<div class="item row between"><div><div class="item-title">'+esc(a)+'</div><p>Goal: '+esc(g.name)+'</p></div>'+button('Add','add-suggested:'+i,'btn secondary')+'</div>').join('')+'<p class="footnote">Suggestions are examples, not prescriptions. A qualified clinician should select the target, criteria, prompting level, and materials.</p></div>';
+ const g=goals.find(x=>x.name===selectedGoal)||goals[0];
+ const categoryFor=name=>name==='Speech sound production'?'Articulation & phonology':name==='Social communication'?'Social communication':name==='Following instructions'||name==='Receptive language'?'Receptive language':name==='Phrase expansion'||name==='Expressive vocabulary'?'Expressive language':'Communication';
+ const goalCards=goals.map((item,index)=>'<button type="button" class="goal-library-card '+(item.name===g.name?'selected':'')+'" data-action="select-goal" data-goal="'+esc(item.name)+'"><span class="goal-card-meta">'+esc(categoryFor(item.name))+'</span><strong>'+esc(item.name)+'</strong><span class="goal-card-target">'+esc(item.target)+'</span><span class="goal-card-footer">'+item.activities.length+' suggested activities <span aria-hidden="true">→</span></span></button>').join('');
+ $('page-goals').innerHTML=header('Goal Suggestions & Activity Library','Explore practical starting points and build an individualized activity plan')+
+ '<div class="clinical-notice"><span class="notice-icon" aria-hidden="true">i</span><div><strong>Clinical guidance notice</strong><p>These are general activity suggestions, not validated clinical targets. Review and individualize goals, criteria, prompts, and materials for each client.</p></div></div>'+
+ '<div class="goal-workspace"><section class="goal-library"><div class="goal-library-heading"><div><div class="eyebrow">ACTIVITY LIBRARY</div><h2>Explore communication goals</h2><p class="muted">Choose a goal to review techniques and suggested activities.</p></div><span class="count-chip">'+goals.length+' goals</span></div>'+
+ '<div class="goal-search"><span aria-hidden="true">⌕</span><input id="goal-search" type="search" placeholder="Search goals, techniques, activities…" aria-label="Search goals, techniques, activities"></div>'+
+ '<div class="goal-filter-row" role="group" aria-label="Filter goals">'+
+ '<button type="button" class="goal-filter active" data-goal-filter="all">All goals</button><button type="button" class="goal-filter" data-goal-filter="language">Language</button><button type="button" class="goal-filter" data-goal-filter="speech">Speech sounds</button><button type="button" class="goal-filter" data-goal-filter="social">Social communication</button></div>'+
+ '<div class="goal-card-grid" id="goal-card-grid">'+goalCards+'</div><p class="footnote">Suggestions are examples for clinician review. No diagnosis, age band, or evidence rating is inferred by this library.</p></section>'+
+ '<aside class="goal-detail-panel"><div class="eyebrow">SELECTED GOAL</div><span class="goal-detail-icon" aria-hidden="true">◎</span><span class="pill">'+esc(categoryFor(g.name))+'</span><h2>'+esc(g.name)+'</h2><p class="goal-detail-target">'+esc(g.target)+'</p>'+
+ '<div class="detail-section"><h3>Suggested techniques</h3><div class="technique-list">'+g.techniques.map(t=>'<span class="technique-chip">'+esc(t)+'</span>').join('')+'</div></div>'+
+ '<div class="detail-section"><div class="row between"><h3>Target activities</h3><span class="muted">'+g.activities.length+' ideas</span></div><div class="suggested-activities">'+g.activities.map((a,i)=>'<div class="suggested-activity"><div><strong>'+esc(a)+'</strong><span>Goal: '+esc(g.name)+'</span></div><button type="button" class="smallbtn" data-action="add-suggested:'+i+'" aria-label="Add '+esc(a)+' to plan">Add</button></div>').join('')+'</div></div>'+
+ '<div class="goal-detail-footer"><p class="muted">Activities are added to your selected client’s plan for further individualization.</p><button type="button" class="btn" data-action="add-goal-activity">+ Plan an activity</button></div></aside></div>';
+ const search=$('goal-search');
+ if(search){search.addEventListener('input',()=>filterGoalCards());}
+ document.querySelectorAll('[data-goal-filter]').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('[data-goal-filter]').forEach(x=>x.classList.toggle('active',x===btn));
+  filterGoalCards();
+ }));
+ function filterGoalCards(){
+  const query=String($('goal-search')?.value||'').toLowerCase().trim();
+  const filter=document.querySelector('[data-goal-filter].active')?.dataset.goalFilter||'all';
+  document.querySelectorAll('#goal-card-grid [data-action="select-goal"]').forEach(card=>{
+   const item=goals.find(x=>x.name===card.dataset.goal);
+   const cat=categoryFor(item.name);
+   const categoryMatch=filter==='all'||(filter==='speech'&&cat==='Articulation & phonology')||(filter==='social'&&cat==='Social communication')||(filter==='language'&&cat!=='Articulation & phonology'&&cat!=='Social communication');
+   const haystack=[item.name,item.target,...item.techniques,...item.activities,cat].join(' ').toLowerCase();
+   card.classList.toggle('hidden',!categoryMatch||!haystack.includes(query));
+  });
+ }
 }
 function renderDiary(){
 $('page-diary').innerHTML=header('Therapy diary','Session notes and response records',button('+ Add diary note','add-diary'))+
@@ -370,6 +445,8 @@ else if(a==='delete-diary'){if(confirm('Delete this diary note?')){db.diary=db.d
 else if(a==='export-backup')exportBackup();
 else if(a==='import-backup')importBackup();
 else if(a==='export-csv')exportResponsesCsv();
+else if(a==='select-goal'){selectedGoal=b.dataset.goal||goals[0].name;renderGoals()}
+else if(a==='add-goal-activity'){const g=goals.find(x=>x.name===selectedGoal)||goals[0];addTask({title:g.activities[0],goal:g.name,technique:g.techniques[0],duration:10})}
 else if(a.startsWith('add-suggested:')){const g=goals.find(x=>x.name===selectedGoal);addTask({title:g.activities[Number(a.split(':')[1])],goal:g.name,duration:10})}
 });
 document.addEventListener('change',e=>{
