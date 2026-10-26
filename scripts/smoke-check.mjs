@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const scriptMatch = html.match(/<script>([\\s\\S]*?)<\\/script>/i);
+const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/i);
 assert.ok(scriptMatch, 'index.html should contain the application script');
 new Function(scriptMatch[1]);
 console.log('PASS: app JavaScript parses');
