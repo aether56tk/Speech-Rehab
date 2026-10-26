@@ -490,6 +490,28 @@ if(e.target.id==='goal-select'){selectedGoal=e.target.value;renderGoals()}
 if(e.target.id==='session-filter'){selectedClient=e.target.value;renderSessions()}
 if(e.target.dataset.action==='toggle-task'){const t=db.tasks.find(t=>t.id===e.target.dataset.id);if(t){t.done=e.target.checked;save();render();}}
 });
+const workspaceSearch=$('workspace-search');
+if(workspaceSearch){
+ workspaceSearch.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+   const q=workspaceSearch.value.trim();
+   if(!q)return;
+   const lower=q.toLowerCase();
+   if(goals.some(g=>(g.name+' '+g.target+' '+g.techniques.join(' ')+' '+g.activities.join(' ')).toLowerCase().includes(lower))){
+    selectedGoal=goals.find(g=>(g.name+' '+g.target+' '+g.techniques.join(' ')+' '+g.activities.join(' ')).toLowerCase().includes(lower))?.name||goals[0].name;
+    go('goals');const gs=$('goal-search');if(gs){gs.value=q;gs.dispatchEvent(new Event('input',{bubbles:true}));}
+   }else if(db.clients.some(c=>(c.name+' '+c.concern+' '+c.age).toLowerCase().includes(lower))){
+    go('clients');const cs=$('client-search');if(cs){cs.value=q;cs.dispatchEvent(new Event('input',{bubbles:true}));}
+   }else{
+    go('diary');showNotice('Showing therapy diary. Use the page records to review matching notes.');
+   }
+  }
+  if(e.key==='Escape'){workspaceSearch.value='';workspaceSearch.blur();}
+ });
+}
+document.addEventListener('keydown',e=>{
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();workspaceSearch?.focus();}
+});
 document.addEventListener('input',e=>{if(e.target.id==='client-search'){const q=e.target.value.toLowerCase().trim();const list=db.clients.filter(c=>(c.name+' '+c.concern+' '+c.age).toLowerCase().includes(q));const el=$('client-list');if(el)el.innerHTML=clientItems(list);const count=$('client-count');if(count)count.textContent=list.length+' matching client'+(list.length===1?'':'s')}});
 if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 go('home');
