@@ -139,6 +139,37 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .goal-detail-footer .btn{width:100%}
 @media(max-width:1100px){.goal-workspace{grid-template-columns:minmax(0,1fr)}.goal-detail-panel{position:static}.goal-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.goal-library,.goal-detail-panel{padding:14px}.goal-card-grid{grid-template-columns:1fr}.goal-library-heading{flex-direction:column}.goal-detail-panel h2{font-size:19px}}
+/* Workspace chrome and responsive refinement */
+html,body{max-width:100%;overflow-x:hidden}
+.app{width:100%;min-width:0;grid-template-columns:240px minmax(0,1fr)}
+.sidebar{min-width:0}
+main{min-width:0;max-width:none;padding:0 clamp(20px,2.6vw,38px) 32px}
+.workspace-topbar{height:66px;display:flex;align-items:center;gap:22px;border-bottom:1px solid #dce7e7;margin:0 0 26px;padding:0 0 0;min-width:0}
+.workspace-context{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+.workspace-mark{display:grid;place-items:center;width:31px;height:31px;border-radius:7px;background:#075e50;color:#fff;font-size:11px;font-weight:800;letter-spacing:-.4px}
+.workspace-context>div{display:flex;flex-direction:column;line-height:1.15}
+.workspace-context strong{font-size:12px;color:#142d35}
+.workspace-context span{font-size:9px;color:#647782;letter-spacing:.08em;margin-top:4px}
+.global-search{display:flex;align-items:center;gap:9px;flex:1;min-width:120px;max-width:560px;height:36px;padding:0 10px;border:1px solid #dce7e7;background:#f8fbfb;border-radius:7px;color:#647782}
+.global-search:focus-within{border-color:#0d8a72;box-shadow:0 0 0 3px rgba(13,138,114,.1)}
+.global-search>span{font-size:22px;line-height:1}
+.global-search input{border:0;outline:0!important;box-shadow:none!important;background:transparent;min-width:0;width:100%;font:inherit;font-size:12px;color:#142d35}
+.global-search kbd{flex:0 0 auto;border:1px solid #dce7e7;background:#fff;border-radius:4px;padding:2px 5px;font-size:9px;color:#647782}
+.workspace-tools{display:flex;align-items:center;gap:8px;margin-left:auto}
+.connection-chip{display:flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid #cce8df;background:#f0faf6;border-radius:5px;padding:6px 8px;font-size:10px;font-weight:650;color:#075e50}
+.connection-dot{width:6px;height:6px;border-radius:50%;background:#1b8755}
+.icon-button{width:31px;height:31px;display:grid;place-items:center;border:1px solid #dce7e7;border-radius:7px;background:#fff;color:#526973;font-size:15px}
+.icon-button:hover{background:#f5f8f8;border-color:#bdcfce}
+main>.top{padding-top:0}
+#page-home,#page-clients,#page-sessions,#page-goals,#page-diary,#page-progress{min-width:0}
+.grid,.grid.three{grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}
+.grid:not(.three){grid-template-columns:repeat(2,minmax(0,1fr))}
+.card,.item{min-width:0}
+.goal-workspace{grid-template-columns:minmax(0,1.55fr) minmax(285px,.8fr);gap:16px}
+.goal-library,.goal-detail-panel{min-width:0}
+@media(max-width:1050px){.workspace-topbar{gap:12px}.workspace-context strong{font-size:11px}.connection-chip{max-width:130px;overflow:hidden}.goal-workspace{grid-template-columns:minmax(0,1fr)}.goal-detail-panel{position:static}}
+@media(max-width:760px){main{padding:0 14px 24px}.workspace-topbar{height:auto;min-height:58px;gap:8px;flex-wrap:wrap;padding:10px 0;margin-bottom:20px}.workspace-context{flex:1}.global-search{order:3;flex:1 0 100%;max-width:none;height:38px}.workspace-tools{margin-left:0}.connection-chip{font-size:9px;padding:5px 6px}.workspace-tools .icon-button{width:29px;height:29px}.grid,.grid.three,.grid:not(.three){grid-template-columns:minmax(0,1fr)}.top{padding-top:0}.goal-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.workspace-context>div span{display:none}.connection-chip{max-width:105px}.goal-card-grid{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body class="auth-required">
@@ -156,6 +187,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   <div class="side-note">Cloud workspace<br><strong id="cloud-user">Not signed in</strong><div class="cloud-status" id="cloud-status">Connecting securely…</div><button class="smallbtn" id="signout-button" type="button" style="margin-top:10px">Sign out</button></div>
 </aside>
 <main>
+  <div class="workspace-topbar">
+    <div class="workspace-context"><span class="workspace-mark">SR</span><div><strong>Speech Rehab</strong><span>CLINICAL WORKSPACE</span></div></div>
+    <label class="global-search"><span aria-hidden="true">⌕</span><input id="workspace-search" type="search" placeholder="Search clients, goals, clinical notes…" aria-label="Search clients, goals, clinical notes"><kbd>Ctrl K</kbd></label>
+    <div class="workspace-tools"><span class="connection-chip"><span class="connection-dot"></span><span id="top-cloud-label">Cloud workspace</span></span><button class="icon-button" type="button" data-action="go-diary" aria-label="Open therapy diary" title="Therapy diary">▤</button><button class="icon-button" type="button" data-action="go-progress" aria-label="Open progress" title="Progress">↗</button></div>
+  </div>
   <div id="notice" class="notice hidden" role="status"></div>
   <section id="page-home"></section><section id="page-clients" class="hidden"></section><section id="page-sessions" class="hidden"></section><section id="page-goals" class="hidden"></section><section id="page-diary" class="hidden"></section><section id="page-progress" class="hidden"></section>
   <p class="footnote">Speech Rehab is a management tool, not an assessment or diagnostic tool. Suggested therapy content must be reviewed and individualized by a qualified clinician.</p>
