@@ -179,6 +179,81 @@ create index if not exists clinical_records_clinic_idx on public.clinical_record
 create index if not exists clinical_records_created_by_idx on public.clinical_records(created_by);
 create index if not exists clinics_created_by_idx on public.clinics(created_by);
 
+-- Private implementations for authenticated RPC wrappers.
+create or replace function private.create_speech_rehab_clinic(p_name text)
+returns uuid language plpgsql security definer set search_path=''
+as $
+declare new_id uuid;
+begin
+ if (select auth.uid()) is null then raise exception 'Authentication required'; end if;
+ if char_length(trim(coalesce(p_name,'')))<2 or char_length(trim(p_name))>120 then raise exception 'Clinic name must be 2 to 120 characters'; end if;
+ insert into public.clinics(name,created_by) values(trim(p_name),(select auth.uid())) returning id into new_id;
+ insert into public.clinic_memberships(clinic_id,user_id,role,status) values(new_id,(select auth.uid()),'therapist','active');
+ return new_id;
+end;
+$;
+revoke all on function private.create_speech_rehab_clinic(text) from public,anon;
+grant execute on function private.create_speech_rehab_clinic(text) to authenticated;
+
+create or replace function private.create_speech_rehab_invitation(p_clinic_id uuid,p_email text,p_role text)
+returns text language plpgsql security definer set search_path=''
+as $
+declare token text; clinic_owner uuid;
+begin
+ if (select auth.uid()) is null then raise exception 'Authentication required'; end if;
+ if p_role not in ('therapist','student_clinician','parent') then raise exception 'Invalid role'; end if;
+ select created_by into clinic_owner from public.clinics where id=p_clinic_id;
+ if clinic_owner is null or clinic_owner<>(select auth.uid()) then raise exception 'Only the clinic owner can invite members'; end if;
+ if p_email !~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+[.][A-Z]{2,}
+create or replace function public.create_speech_rehab_clinic(p_name text)
+returns uuid language sql security invoker set search_path=''
+as $$ select private.create_speech_rehab_clinic(p_name) $$;
+revoke all on function public.create_speech_rehab_clinic(text) from public,anon;
+grant execute on function public.create_speech_rehab_clinic(text) to authenticated;
+
+create or replace function public.create_speech_rehab_invitation(p_clinic_id uuid,p_email text,p_role text)
+returns text language sql security invoker set search_path=''
+as $$ select private.create_speech_rehab_invitation(p_clinic_id,p_email,p_role) $$;
+revoke all on function public.create_speech_rehab_invitation(uuid,text,text) from public,anon;
+grant execute on function public.create_speech_rehab_invitation(uuid,text,text) to authenticated;
+
+create or replace function public.accept_speech_rehab_invitation(p_token text)
+returns uuid language sql security invoker set search_path=''
+as $$ select private.accept_speech_rehab_invitation(p_token) $$;
+revoke all on function public.accept_speech_rehab_invitation(text) from public,anon;
+grant execute on function public.accept_speech_rehab_invitation(text) to authenticated;
+ then raise exception 'Enter a valid email'; end if;
+ token:=encode(extensions.gen_random_bytes(32),'hex');
+ insert into public.clinic_invitations(clinic_id,email,role,token_hash,invited_by)
+ values(p_clinic_id,lower(trim(p_email)),p_role,encode(extensions.digest(token,'sha256'),'hex'),(select auth.uid()));
+ return token;
+end;
+$;
+revoke all on function private.create_speech_rehab_invitation(uuid,text,text) from public,anon;
+grant execute on function private.create_speech_rehab_invitation(uuid,text,text) to authenticated;
+
+create or replace function private.accept_speech_rehab_invitation(p_token text)
+returns uuid language plpgsql security definer set search_path=''
+as $
+declare inv public.clinic_invitations%rowtype; current_email text; uid uuid;
+begin
+ uid:=(select auth.uid());
+ if uid is null then raise exception 'Authentication required'; end if;
+ current_email:=lower(coalesce((select auth.jwt()->>'email'),''));
+ select * into inv from public.clinic_invitations
+ where token_hash=encode(extensions.digest(p_token,'sha256'),'hex') and accepted_at is null and expires_at>now()
+ for update;
+ if inv.id is null then raise exception 'Invitation is invalid, expired, or already used'; end if;
+ if current_email<>lower(inv.email) then raise exception 'Sign in with the email address the invitation was sent to'; end if;
+ insert into public.clinic_memberships(clinic_id,user_id,role,status) values(inv.clinic_id,uid,inv.role,'active')
+ on conflict(clinic_id,user_id) do update set role=excluded.role,status='active';
+ update public.clinic_invitations set accepted_at=now() where id=inv.id;
+ return inv.clinic_id;
+end;
+$;
+revoke all on function private.accept_speech_rehab_invitation(text) from public,anon;
+grant execute on function private.accept_speech_rehab_invitation(text) to authenticated;
+
 -- Public RPC wrappers are invoker functions. The checked implementations live in private.
 create or replace function public.create_speech_rehab_clinic(p_name text)
 returns uuid language sql security invoker set search_path=''
@@ -197,3 +272,13 @@ returns uuid language sql security invoker set search_path=''
 as $$ select private.accept_speech_rehab_invitation(p_token) $$;
 revoke all on function public.accept_speech_rehab_invitation(text) from public,anon;
 grant execute on function public.accept_speech_rehab_invitation(text) to authenticated;
+
+-- Split write policies from read policies so each role has one policy per action.
+drop policy if exists memberships_owner_manage on public.clinic_memberships;
+create policy memberships_owner_insert on public.clinic_memberships for insert to authenticated with check (private.is_clinic_owner(clinic_id));
+create policy memberships_owner_update on public.clinic_memberships for update to authenticated using (private.is_clinic_owner(clinic_id)) with check (private.is_clinic_owner(clinic_id));
+create policy memberships_owner_delete on public.clinic_memberships for delete to authenticated using (private.is_clinic_owner(clinic_id));
+drop policy if exists client_access_clinician_manage on public.client_access;
+create policy client_access_clinician_insert on public.client_access for insert to authenticated with check (private.can_manage_client_access(client_id));
+create policy client_access_clinician_update on public.client_access for update to authenticated using (private.can_manage_client_access(client_id)) with check (private.can_manage_client_access(client_id));
+create policy client_access_clinician_delete on public.client_access for delete to authenticated using (private.can_manage_client_access(client_id));
