@@ -114,7 +114,7 @@ $('page-diary').innerHTML=header('Therapy diary','Session notes and response rec
 }
 function renderProgress(){
 const done=db.tasks.filter(t=>t.done).length, ratio=db.tasks.length?Math.round(done/db.tasks.length*100):0;
-$('page-progress').innerHTML=header('Progress','Activity completion and recorded responses')+
+$('page-progress').innerHTML=header('Progress','Activity completion and recorded responses',button('Export backup','export-backup','btn secondary')+' '+button('Export responses CSV','export-csv','btn ghost'))+
 '<div class="grid three"><div class="card"><div class="muted">Activities completed</div><div class="metric">'+done+'/'+db.tasks.length+'</div></div><div class="card"><div class="muted">Completion</div><div class="metric">'+ratio+'%</div><div class="progress"><span style="width:'+ratio+'%"></span></div></div><div class="card"><div class="muted">Responses recorded</div><div class="metric">'+db.responses.length+'</div></div></div>'+
 '<h2 class="section-title">Activity status</h2>'+taskList(db.tasks,false)+'<p class="footnote">Completion is a management measure, not a measure of clinical improvement. Accuracy should be calculated only from trials actually recorded.</p>';
 }
