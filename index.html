@@ -79,7 +79,7 @@ function clientName(id){return db.clients.find(c=>c.id===id)?.name||'Unassigned'
 function showNotice(s){$('notice').textContent=s;$('notice').classList.remove('hidden');setTimeout(()=>$('notice').classList.add('hidden'),3000)}
 function header(title,subtitle,action=''){return '<div class="top"><div><h1>'+title+'</h1><div class="sub">'+subtitle+'</div></div>'+action+'</div>'}
 function button(label,action,cls='btn'){return '<button class="'+cls+'" data-action="'+action+'">'+label+'</button>'}
-function go(page){currentPage=page;document.querySelectorAll('[id^="page-"]').forEach(e=>e.classList.toggle('hidden',e.id!=='page-'+page));document.querySelectorAll('[data-page]').forEach(e=>e.classList.toggle('active',e.dataset.page===page));render()}
+function go(page){currentPage=page;document.querySelectorAll('[id^="page-"]').forEach(e=>e.classList.toggle('hidden',e.id!=='page-'+page));document.querySelectorAll('[data-page]').forEach(e=>e.classList.toggle('active',e.dataset.page===page));render();if(page==='home'&&cloudReady&&typeof loadClinicTools==='function')loadClinicTools()}
 function render(){renderHome();renderClients();renderSessions();renderGoals();renderDiary();renderProgress()}
 function downloadFile(filename, content, mime){
  const blob=new Blob([content],{type:mime});
