@@ -47,7 +47,7 @@ const seed={
 };
 let db=load();
 function load(){try{const x=JSON.parse(localStorage.getItem(STORE));if(x&&x.clients&&x.tasks)return x}catch(e){}return structuredClone(seed)}
-function save(){localStorage.setItem(STORE,JSON.stringify(db))}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(db))}catch(e){showNotice('Could not save locally. Check browser storage settings.')}}
 const goals=[
 {name:'Expressive vocabulary',target:'The client will name selected familiar objects or pictures with clinician-defined support.',techniques:['Modeling','Focused stimulation','Expectant pause','Graduated prompting'],activities:['Picture naming','Category sorting','Requesting during play','Object identification']},
 {name:'Receptive language',target:'The client will identify named items or follow selected instructions with agreed support.',techniques:['Visual supports','Gesture cues','Repetition','Graduated prompting'],activities:['Identify named objects','Follow one-step directions','Find the picture','Place objects by instruction']},
@@ -64,7 +64,25 @@ function showNotice(s){$('notice').textContent=s;$('notice').classList.remove('h
 function header(title,subtitle,action=''){return '<div class="top"><div><h1>'+title+'</h1><div class="sub">'+subtitle+'</div></div>'+action+'</div>'}
 function button(label,action,cls='btn'){return '<button class="'+cls+'" data-action="'+action+'">'+label+'</button>'}
 function go(page){currentPage=page;document.querySelectorAll('[id^="page-"]').forEach(e=>e.classList.toggle('hidden',e.id!=='page-'+page));document.querySelectorAll('[data-page]').forEach(e=>e.classList.toggle('active',e.dataset.page===page));render()}
-function render(){renderHome();renderClients();renderSessions();renderGoals();renderDiary();renderProgress()}
+function render(){renderHome();renderClients();renderSessions();renderGoals();renderDiary();renderProgress()}\n
+function downloadFile(filename, content, mime){
+ const blob=new Blob([content],{type:mime});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=url;a.download=filename;
+ document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
+function exportBackup(){
+ downloadFile('speech-rehab-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({format:'speech-rehab-backup-v1',exportedAt:new Date().toISOString(),data:db},null,2),'application/json');
+ showNotice('Backup downloaded. Store it somewhere private.');
+}
+function exportResponsesCsv(){
+ const rows=[['Date','Client','Activity','Response','Prompt level','Trials','Notes']];
+ db.responses.forEach(r=>rows.push([r.date,clientName(r.clientId),r.activity,r.response,r.prompt,r.trials,r.notes]));
+ const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
+ downloadFile('speech-rehab-responses-'+new Date().toISOString().slice(0,10)+'.csv',csv,'text/csv;charset=utf-8');
+ showNotice('Response CSV downloaded.');
+}
+
 function renderHome(){
 const done=db.tasks.filter(t=>t.done).length;
 $('page-home').innerHTML=header('Good day 👋','Your speech rehabilitation workspace')+
@@ -119,6 +137,8 @@ else if(a==='add-task')addTask();
 else if(a==='delete-task'){db.tasks=db.tasks.filter(t=>t.id!==id);save();render()}
 else if(a==='record-task')recordTask(id);
 else if(a==='add-diary')addDiary();
+else if(a==='export-backup')exportBackup();
+else if(a==='export-csv')exportResponsesCsv();
 else if(a.startsWith('add-suggested:')){const g=goals.find(x=>x.name===selectedGoal);addTask({title:g.activities[Number(a.split(':')[1])],goal:g.name,duration:10})}
 });
 document.addEventListener('change',e=>{
