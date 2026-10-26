@@ -1,0 +1,10 @@
+{
+  "name": "Speech Rehab Management",
+  "short_name": "Speech Rehab",
+  "description": "Manage speech rehabilitation clients, therapy plans, activities and session responses.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f8f7",
+  "theme_color": "#087f67",
+  "icons": []
+}
