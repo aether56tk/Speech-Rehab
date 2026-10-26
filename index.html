@@ -59,7 +59,48 @@ function load(){try{const x=JSON.parse(localStorage.getItem(STORE));if(x&&x.clie
 function save(){try{localStorage.setItem(STORE,JSON.stringify(db))}catch(e){showNotice('Could not save locally. Check browser storage settings.')}if(cloudUser&&cloudReady){$('cloud-status').textContent='Saving…';clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(syncWorkspace,500)}}
 async function syncWorkspace(){if(!supabaseClient||!cloudUser||!cloudReady)return;try{const {error}=await supabaseClient.from('user_workspaces').upsert({user_id:cloudUser.id,data:db,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)throw error;$('cloud-status').textContent='Synced to cloud · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}catch(e){$('cloud-status').textContent='Cloud sync failed';showNotice('Cloud sync failed: '+(e.message||'Check connection and database setup.'))}}
 function setAuthMode(mode){authMode=mode;const signIn=mode==='signin';$('auth-submit').textContent=signIn?'Sign in':'Create account';$('auth-name-wrap').style.display=signIn?'none':'flex';$('auth-password').autocomplete=signIn?'current-password':'new-password';document.querySelectorAll('[data-auth-mode]').forEach(b=>{b.className='btn '+(b.dataset.authMode===mode?'secondary':'ghost')});$('auth-status').textContent=signIn?'Sign in to access your private workspace.':'Create your account. If email confirmation is enabled, verify your email before signing in.'}
-async function handleAuthSubmit(e){e.preventDefault();if(!supabaseClient){$('auth-status').textContent='Supabase client did not load. Check your internet connection.';return}const f=new FormData(e.currentTarget),email=String(f.get('email')||'').trim(),password=String(f.get('password')||'');$('auth-submit').disabled=true;$('auth-status').textContent='Please wait…';try{if(authMode==='signup'){const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{display_name:String(f.get('display_name')||'').trim()}}});if(error)throw error;$('auth-status').textContent=data.session?'Account created. Opening workspace…':'Account created. Check your email to confirm, then sign in.'}else{const {error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;$('auth-status').textContent='Signed in. Loading your workspace…'}}catch(e){$('auth-status').textContent=e.message||'Authentication failed.'}finally{$('auth-submit').disabled=false}}
+async function handleAuthSubmit(e){
+ e.preventDefault();
+ if(!supabaseClient){$('auth-status').textContent='The sign-up service did not load. Refresh the page and check your internet connection.';return}
+ const form=e.currentTarget,values=new FormData(form);
+ const email=String(values.get('email')||'').trim().toLowerCase();
+ const password=String(values.get('password')||'');
+ const displayName=String(values.get('display_name')||'').trim();
+ if(!email){$('auth-status').textContent='Enter your email address.';$('auth-email').focus();return}
+ if(password.length<8){$('auth-status').textContent='Your password must contain at least 8 characters.';$('auth-password').focus();return}
+ if(authMode==='signup'&&displayName.length>120){$('auth-status').textContent='Name must be 120 characters or fewer.';return}
+ const submit=$('auth-submit');submit.disabled=true;submit.textContent=authMode==='signup'?'Creating account…':'Signing in…';
+ $('auth-status').textContent='Connecting securely to Supabase…';
+ try{
+  if(authMode==='signup'){
+   const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{display_name:displayName},emailRedirectTo:window.location.origin+window.location.pathname}});
+   if(error)throw error;
+   if(data.session){
+    $('auth-status').textContent='Account created successfully. Loading your workspace…';
+   }else{
+    $('auth-status').textContent='Signup request accepted. Check your inbox and spam folder for the confirmation email. After confirming, return here and sign in. If no email arrives, check Supabase Authentication email settings.';
+   }
+  }else{
+   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+   if(error)throw error;
+   $('auth-status').textContent='Signed in. Loading your workspace…';
+   if(data.session)await applySession(data.session);
+  }
+ }catch(err){
+  const message=String(err?.message||'');
+  if(/already registered|user already exists/i.test(message)){
+   $('auth-status').textContent='An account may already exist for this email. Try Sign in, or use the password reset option in Supabase Auth if you forgot your password.';
+  }else if(/email.*(rate|limit)|rate limit/i.test(message)){
+   $('auth-status').textContent='Too many attempts or emails were requested. Wait a few minutes and try again.';
+  }else if(/password/i.test(message)){
+   $('auth-status').textContent='Password rejected: '+message;
+  }else{
+   $('auth-status').textContent='Could not '+(authMode==='signup'?'create account: ':'sign in: ')+(message||'Unknown authentication error. Check connection and Supabase Auth settings.');
+  }
+ }finally{
+  submit.disabled=false;submit.textContent=authMode==='signup'?'Create account':'Sign in';
+ }
+}
 async function applySession(session){cloudUser=session?.user||null;cloudReady=false;if(!cloudUser){document.body.classList.add('auth-required');$('cloud-user').textContent='Not signed in';$('cloud-status').textContent='Sign in to sync your workspace';return}$('cloud-user').textContent=cloudUser.email||'Signed in';$('cloud-status').textContent='Loading cloud workspace…';try{const {data,error}=await supabaseClient.from('user_workspaces').select('data').eq('user_id',cloudUser.id).maybeSingle();if(error)throw error;if(data?.data){db=normalizeWorkspace(data.data);try{localStorage.setItem(STORE,JSON.stringify(db))}catch(e){}}else{db={clients:[],tasks:[],responses:[],diary:[]};const {error:insertError}=await supabaseClient.from('user_workspaces').insert({user_id:cloudUser.id,data:db});if(insertError)throw insertError}cloudReady=true;document.body.classList.remove('auth-required');$('cloud-status').textContent='Cloud connected';render();go(currentPage);if(typeof loadClinicTools==='function')loadClinicTools()}catch(e){cloudReady=false;document.body.classList.add('auth-required');$('cloud-status').textContent='Database setup needed';$('auth-status').textContent='Signed in, but cloud data could not load. Check database setup and Data API access: '+(e.message||'');}}
 if(supabaseClient){supabaseClient.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>applySession(session),0)});supabaseClient.auth.getSession().then(({data})=>applySession(data.session)).catch(()=>document.body.classList.add('auth-required'))}else{$('auth-status').textContent='Supabase client failed to load.'}
 document.querySelectorAll('[data-auth-mode]').forEach(b=>b.addEventListener('click',()=>setAuthMode(b.dataset.authMode)));$('auth-form').addEventListener('submit',handleAuthSubmit);$('signout-button').addEventListener('click',async()=>{if(supabaseClient){cloudReady=false;await supabaseClient.auth.signOut()}});
