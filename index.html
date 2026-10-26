@@ -64,7 +64,7 @@ function showNotice(s){$('notice').textContent=s;$('notice').classList.remove('h
 function header(title,subtitle,action=''){return '<div class="top"><div><h1>'+title+'</h1><div class="sub">'+subtitle+'</div></div>'+action+'</div>'}
 function button(label,action,cls='btn'){return '<button class="'+cls+'" data-action="'+action+'">'+label+'</button>'}
 function go(page){currentPage=page;document.querySelectorAll('[id^="page-"]').forEach(e=>e.classList.toggle('hidden',e.id!=='page-'+page));document.querySelectorAll('[data-page]').forEach(e=>e.classList.toggle('active',e.dataset.page===page));render()}
-function render(){renderHome();renderClients();renderSessions();renderGoals();renderDiary();renderProgress()}\n
+function render(){renderHome();renderClients();renderSessions();renderGoals();renderDiary();renderProgress()}
 function downloadFile(filename, content, mime){
  const blob=new Blob([content],{type:mime});
  const url=URL.createObjectURL(blob);
