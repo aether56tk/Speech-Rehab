@@ -75,6 +75,29 @@ function exportBackup(){
  downloadFile('speech-rehab-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({format:'speech-rehab-backup-v1',exportedAt:new Date().toISOString(),data:db},null,2),'application/json');
  showNotice('Backup downloaded. Store it somewhere private.');
 }
+function importBackup(){
+ const input=document.createElement('input');
+ input.type='file'; input.accept='application/json,.json';
+ input.onchange=async()=>{
+  const file=input.files?.[0]; if(!file)return;
+  try{
+   const parsed=JSON.parse(await file.text());
+   const candidate=parsed?.format==='speech-rehab-backup-v1'?parsed.data:parsed;
+   const valid=candidate&&Array.isArray(candidate.clients)&&Array.isArray(candidate.tasks)&&Array.isArray(candidate.responses)&&Array.isArray(candidate.diary);
+   if(!valid)throw new Error('Backup format is not recognized.');
+   const clean={
+    clients:candidate.clients.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string').map(x=>({id:x.id,name:x.name,age:String(x.age||''),concern:String(x.concern||''),notes:String(x.notes||'')})),
+    tasks:candidate.tasks.filter(x=>x&&typeof x.id==='string'&&typeof x.title==='string').map(x=>({id:x.id,clientId:String(x.clientId||''),title:x.title,goal:String(x.goal||''),duration:Math.max(1,Number(x.duration)||10),done:Boolean(x.done)})),
+    responses:candidate.responses.filter(x=>x&&typeof x.activity==='string').map(x=>({id:String(x.id||('r'+Math.random().toString(36).slice(2))),clientId:String(x.clientId||''),activity:String(x.activity),response:String(x.response||''),prompt:String(x.prompt||''),trials:String(x.trials||''),notes:String(x.notes||''),date:String(x.date||'')})),
+    diary:candidate.diary.filter(x=>x&&typeof x.note==='string').map(x=>({id:String(x.id||('d'+Math.random().toString(36).slice(2))),clientId:String(x.clientId||''),title:String(x.title||'Therapy session'),note:String(x.note),date:String(x.date||'')}))
+   };
+   if(!confirm('Import this backup and replace the data currently saved in this browser? Download a backup first if you need to keep existing data.'))return;
+   db=clean; save(); render(); showNotice('Backup restored successfully.');
+  }catch(err){showNotice('Import failed: '+(err?.message||'invalid backup file'))}
+ };
+ input.click();
+}
+
 function exportResponsesCsv(){
  const rows=[['Date','Client','Activity','Response','Prompt level','Trials','Notes']];
  db.responses.forEach(r=>rows.push([r.date,clientName(r.clientId),r.activity,r.response,r.prompt,r.trials,r.notes]));
@@ -114,30 +137,32 @@ $('page-diary').innerHTML=header('Therapy diary','Session notes and response rec
 }
 function renderProgress(){
 const done=db.tasks.filter(t=>t.done).length, ratio=db.tasks.length?Math.round(done/db.tasks.length*100):0;
-$('page-progress').innerHTML=header('Progress','Activity completion and recorded responses',button('Export backup','export-backup','btn secondary')+' '+button('Export responses CSV','export-csv','btn ghost'))+
+$('page-progress').innerHTML=header('Progress','Activity completion and recorded responses',button('Import backup','import-backup','btn ghost')+' '+button('Export backup','export-backup','btn secondary')+' '+button('Export responses CSV','export-csv','btn ghost'))+
 '<div class="grid three"><div class="card"><div class="muted">Activities completed</div><div class="metric">'+done+'/'+db.tasks.length+'</div></div><div class="card"><div class="muted">Completion</div><div class="metric">'+ratio+'%</div><div class="progress"><span style="width:'+ratio+'%"></span></div></div><div class="card"><div class="muted">Responses recorded</div><div class="metric">'+db.responses.length+'</div></div></div>'+
 '<h2 class="section-title">Activity status</h2>'+taskList(db.tasks,false)+'<p class="footnote">Completion is a management measure, not a measure of clinical improvement. Accuracy should be calculated only from trials actually recorded.</p>';
 }
 function clientOptions(id){return db.clients.map(c=>'<option value="'+c.id+'" '+(id===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')}
+function requireClients(){if(db.clients.length)return true;showNotice('Add a client profile before creating sessions or notes.');go('clients');return false}
 function modalForm(title,body,submitLabel,onSubmit){const wrap=document.createElement('div');wrap.style.cssText='position:fixed;inset:0;background:#10252288;display:grid;place-items:center;padding:16px;z-index:10';wrap.innerHTML='<div class="card" style="width:min(520px,100%);max-height:90vh;overflow:auto"><div class="row between"><h2>'+title+'</h2><button class="smallbtn" id="modal-close">✕</button></div><form id="modal-form">'+body+'<div class="actions"><button class="btn" type="submit">'+submitLabel+'</button><button class="btn ghost" type="button" id="modal-cancel">Cancel</button></div></form></div>';document.body.appendChild(wrap);const close=()=>wrap.remove();wrap.querySelector('#modal-close').onclick=close;wrap.querySelector('#modal-cancel').onclick=close;wrap.querySelector('form').onsubmit=e=>{e.preventDefault();if(onSubmit(new FormData(e.target))!==false)close()};}
 function field(name,label,value='',placeholder='',type='text'){return '<div class="field"><label>'+label+'</label><input name="'+name+'" type="'+type+'" value="'+esc(value)+'" placeholder="'+esc(placeholder)+'" '+(name==='name'||name==='age'||name==='concern'?'required':'')+'></div>'}
 function addClient(id=null){const old=id?db.clients.find(c=>c.id===id):null;modalForm(old?'Edit client':'Add client',field('name','Client name or code',old?.name||'','Enter name or code')+field('age','Age',old?.age||'','e.g. 5 years')+field('concern','Primary communication concern',old?.concern||'','Management note only')+'<div class="field"><label>Additional notes (optional)</label><textarea name="notes">'+esc(old?.notes||'')+'</textarea></div>', 'Save client',f=>{const c={name:f.get('name').trim(),age:f.get('age').trim(),concern:f.get('concern').trim(),notes:f.get('notes').trim()};if(old)Object.assign(old,c);else db.clients.push({id:'c'+Date.now(),...c});save();render();showNotice('Client profile saved.');});}
-function addTask(preset=null,clientId=null){modalForm('Add activity',field('title','Activity name',preset?.title||'','e.g. Picture naming')+'<div class="field"><label>Client</label><select name="clientId">'+clientOptions(clientId||db.clients[0]?.id)+'</select></div><div class="field"><label>Communication goal</label><select name="goal">'+goals.map(g=>'<option '+(g.name===(preset?.goal||selectedGoal)?'selected':'')+'>'+esc(g.name)+'</option>').join('')+'</select></div>'+field('duration','Duration (minutes)',preset?.duration||10,'10','number'),'Add to plan',f=>{db.tasks.push({id:'t'+Date.now(),clientId:f.get('clientId'),title:f.get('title').trim(),goal:f.get('goal'),duration:Math.max(1,Number(f.get('duration'))||10),done:false});save();render();showNotice('Activity added to session plan.');});}
+function addTask(preset=null,clientId=null){if(!requireClients())return;modalForm('Add activity',field('title','Activity name',preset?.title||'','e.g. Picture naming')+'<div class="field"><label>Client</label><select name="clientId">'+clientOptions(clientId||db.clients[0]?.id)+'</select></div><div class="field"><label>Communication goal</label><select name="goal">'+goals.map(g=>'<option '+(g.name===(preset?.goal||selectedGoal)?'selected':'')+'>'+esc(g.name)+'</option>').join('')+'</select></div>'+field('duration','Duration (minutes)',preset?.duration||10,'10','number'),'Add to plan',f=>{db.tasks.push({id:'t'+Date.now(),clientId:f.get('clientId'),title:f.get('title').trim(),goal:f.get('goal'),duration:Math.max(1,Number(f.get('duration'))||10),done:false});save();render();showNotice('Activity added to session plan.');});}
 function recordTask(id){const t=db.tasks.find(x=>x.id===id);if(!t)return;modalForm('Record response', '<p class="muted">'+esc(t.title)+' · '+esc(clientName(t.clientId))+'</p><div class="field"><label>Response</label><select name="response"><option>Correct</option><option>Incorrect</option><option>Prompted</option><option>Not attempted</option></select></div><div class="field"><label>Prompt level</label><select name="prompt"><option>Independent</option><option>Verbal</option><option>Gesture</option><option>Visual</option><option>Model</option><option>Other</option></select></div>'+field('trials','Trial count (optional)', '', 'e.g. 4/5')+'<div class="field"><label>Notes (optional)</label><textarea name="notes" placeholder="Record observed response without guessing."></textarea></div>', 'Save response',f=>{db.responses.push({id:'r'+Date.now(),clientId:t.clientId,activity:t.title,response:f.get('response'),prompt:f.get('prompt'),trials:f.get('trials').trim(),notes:f.get('notes').trim(),date:new Date().toLocaleDateString()});save();render();showNotice('Response saved.');});}
-function addDiary(){modalForm('Add diary note','<div class="field"><label>Client</label><select name="clientId">'+clientOptions(db.clients[0]?.id)+'</select></div>'+field('title','Session title','','e.g. Language session')+'<div class="field"><label>Session note</label><textarea name="note" required placeholder="What was practised? Record observed responses and prompts."></textarea></div>','Save note',f=>{db.diary.push({id:'d'+Date.now(),clientId:f.get('clientId'),title:f.get('title').trim()||'Therapy session',note:f.get('note').trim(),date:new Date().toLocaleDateString()});save();render();showNotice('Diary note saved.');});}
+function addDiary(){if(!requireClients())return;modalForm('Add diary note','<div class="field"><label>Client</label><select name="clientId">'+clientOptions(db.clients[0]?.id)+'</select></div>'+field('title','Session title','','e.g. Language session')+'<div class="field"><label>Session note</label><textarea name="note" required placeholder="What was practised? Record observed responses and prompts."></textarea></div>','Save note',f=>{db.diary.push({id:'d'+Date.now(),clientId:f.get('clientId'),title:f.get('title').trim()||'Therapy session',note:f.get('note').trim(),date:new Date().toLocaleDateString()});save();render();showNotice('Diary note saved.');});}
 document.addEventListener('click',e=>{
 const nav=e.target.closest('[data-page]');if(nav){go(nav.dataset.page);return}
 const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action,id=b.dataset.id;
 if(a.startsWith('go-'))go(a.slice(3));
 else if(a==='add-client')addClient();
 else if(a==='edit-client')addClient(id);
-else if(a==='delete-client'){if(confirm('Delete this client and their planned activities?')){db.clients=db.clients.filter(c=>c.id!==id);db.tasks=db.tasks.filter(t=>t.clientId!==id);save();render();showNotice('Client deleted.')}} 
+else if(a==='delete-client'){if(confirm('Delete this client, planned activities, responses, and diary notes? This cannot be undone unless you have a backup.')){db.clients=db.clients.filter(c=>c.id!==id);db.tasks=db.tasks.filter(t=>t.clientId!==id);db.responses=db.responses.filter(r=>r.clientId!==id);db.diary=db.diary.filter(n=>n.clientId!==id);if(selectedClient===id)selectedClient='all';save();render();showNotice('Client and linked records deleted.')}} 
 else if(a==='client-plan'){const c=db.clients.find(c=>c.id===id);go('sessions');selectedClient=id;renderSessions();addTask(null,id)}
 else if(a==='add-task')addTask();
 else if(a==='delete-task'){db.tasks=db.tasks.filter(t=>t.id!==id);save();render()}
 else if(a==='record-task')recordTask(id);
 else if(a==='add-diary')addDiary();
 else if(a==='export-backup')exportBackup();
+else if(a==='import-backup')importBackup();
 else if(a==='export-csv')exportResponsesCsv();
 else if(a.startsWith('add-suggested:')){const g=goals.find(x=>x.name===selectedGoal);addTask({title:g.activities[Number(a.split(':')[1])],goal:g.name,duration:10})}
 });
