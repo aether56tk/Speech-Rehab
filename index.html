@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#087f67">
+<meta name="description" content="Speech Rehab management for client profiles, therapy goals, activities, sessions and progress.">
+<link rel="manifest" href="manifest.json">
+<title>Speech Rehab</title>
+<style>
+:root{--green:#087f67;--green2:#dff5ed;--ink:#172b2a;--muted:#657875;--bg:#f4f8f7;--line:#dce8e5;--white:#fff;--amber:#fff0d4;--blue:#e5f1ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1120px;margin:auto;min-height:100vh;display:grid;grid-template-columns:230px 1fr}.sidebar{background:#fff;border-right:1px solid var(--line);padding:24px 14px;display:flex;flex-direction:column;gap:8px}.brand{font-weight:800;font-size:21px;margin:0 8px 4px}.tagline{color:var(--muted);font-size:12px;margin:0 8px 22px}.nav{border:0;background:transparent;color:var(--muted);text-align:left;padding:12px;border-radius:12px;font-weight:650}.nav.active,.nav:hover{background:var(--green2);color:var(--green)}.side-note{margin-top:auto;padding:12px;background:#f5faf8;border-radius:12px;font-size:12px;color:var(--muted)}main{padding:28px;min-width:0}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.top h1{margin:0;font-size:27px}.sub{color:var(--muted);margin-top:4px}.btn{border:0;background:var(--green);color:white;border-radius:11px;padding:10px 15px;font-weight:700}.btn.secondary{background:var(--green2);color:var(--green)}.btn.ghost{background:white;color:var(--ink);border:1px solid var(--line)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.card{background:white;border:1px solid var(--line);border-radius:17px;padding:18px;min-width:0}.card h2,.card h3{margin:0 0 10px}.metric{font-size:30px;font-weight:800}.muted{color:var(--muted);font-size:13px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.field{display:flex;flex-direction:column;gap:6px;margin:12px 0}.field label{font-weight:700;font-size:13px}.field input,.field select,.field textarea,.search{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}.field textarea{min-height:78px;resize:vertical}.row{display:flex;align-items:center;gap:12px}.between{justify-content:space-between}.pill{display:inline-block;padding:4px 9px;border-radius:99px;background:var(--green2);color:var(--green);font-size:12px;font-weight:700}.list{display:flex;flex-direction:column;gap:10px}.item{border:1px solid var(--line);border-radius:13px;padding:13px;background:#fff}.item-title{font-weight:750}.item p{margin:4px 0;color:var(--muted);font-size:13px}.item-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.smallbtn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;color:var(--ink);font-size:12px;font-weight:650}.smallbtn.danger{color:#b42318}.hidden{display:none!important}.notice{background:var(--green2);color:var(--green);border-radius:10px;padding:10px 12px;margin-bottom:14px}.empty{padding:22px;text-align:center;color:var(--muted)}.progress{height:9px;background:#e8f0ee;border-radius:99px;overflow:hidden}.progress span{display:block;height:100%;background:#10a37f;border-radius:99px}.checkrow{display:flex;gap:10px;align-items:flex-start}.checkrow input{margin-top:4px}.section-title{margin:22px 0 10px;font-size:17px}.footnote{font-size:12px;color:var(--muted);margin-top:20px}.mobile-nav{display:none}
+@media(max-width:760px){.app{display:block;padding-bottom:74px}.sidebar{display:none}main{padding:19px 14px}.top h1{font-size:23px}.grid,.grid.three{grid-template-columns:1fr}.mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);justify-content:space-around;padding:7px 3px calc(7px + env(safe-area-inset-bottom));z-index:5}.mobile-nav .nav{font-size:11px;text-align:center;padding:9px 7px}.top{align-items:flex-start}.top .btn{padding:9px 11px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">🌿 Speech Rehab</div><div class="tagline">Manage · Plan · Practise · Progress</div>
+  <button class="nav active" data-page="home">⌂ &nbsp; Dashboard</button>
+  <button class="nav" data-page="clients">♙ &nbsp; Clients</button>
+  <button class="nav" data-page="sessions">▣ &nbsp; Sessions & Plan</button>
+  <button class="nav" data-page="goals">✦ &nbsp; Goal Suggestions</button>
+  <button class="nav" data-page="diary">☷ &nbsp; Therapy Diary</button>
+  <button class="nav" data-page="progress">↗ &nbsp; Progress</button>
+  <div class="side-note">Prototype version. Use fictional data only. Records are stored in this browser on this device.</div>
+</aside>
+<main>
+  <div id="notice" class="notice hidden" role="status"></div>
+  <section id="page-home"></section><section id="page-clients" class="hidden"></section><section id="page-sessions" class="hidden"></section><section id="page-goals" class="hidden"></section><section id="page-diary" class="hidden"></section><section id="page-progress" class="hidden"></section>
+  <p class="footnote">Speech Rehab is a management tool, not an assessment or diagnostic tool. Suggested therapy content must be reviewed and individualized by a qualified clinician.</p>
+</main>
+</div>
+<nav class="mobile-nav">
+<button class="nav active" data-page="home">⌂<br>Home</button><button class="nav" data-page="clients">♙<br>Clients</button><button class="nav" data-page="sessions">▣<br>Sessions</button><button class="nav" data-page="goals">✦<br>Goals</button><button class="nav" data-page="progress">↗<br>Progress</button>
+</nav>
+<script>
+const STORE='speech-rehab-v1';
+const seed={
+ clients:[{id:'c1',name:'Demo Client A',age:'4 years',concern:'Language development',notes:''},{id:'c2',name:'Demo Client B',age:'6 years',concern:'Speech sound production',notes:''}],
+ tasks:[
+ {id:'t1',clientId:'c1',title:'Picture naming',goal:'Expressive vocabulary',duration:10,done:false},
+ {id:'t2',clientId:'c1',title:'Follow one-step instructions',goal:'Receptive language',duration:10,done:false},
+ {id:'t3',clientId:'c2',title:'Target-word practice',goal:'Speech sound production',duration:10,done:false},
+ {id:'t4',clientId:'c1',title:'Parent-child shared story',goal:'Social communication',duration:10,done:false}],
+ responses:[],diary:[]
+};
+let db=load();
+function load(){try{const x=JSON.parse(localStorage.getItem(STORE));if(x&&x.clients&&x.tasks)return x}catch(e){}return structuredClone(seed)}
+function save(){localStorage.setItem(STORE,JSON.stringify(db))}
+const goals=[
+{name:'Expressive vocabulary',target:'The client will name selected familiar objects or pictures with clinician-defined support.',techniques:['Modeling','Focused stimulation','Expectant pause','Graduated prompting'],activities:['Picture naming','Category sorting','Requesting during play','Object identification']},
+{name:'Receptive language',target:'The client will identify named items or follow selected instructions with agreed support.',techniques:['Visual supports','Gesture cues','Repetition','Graduated prompting'],activities:['Identify named objects','Follow one-step directions','Find the picture','Place objects by instruction']},
+{name:'Phrase expansion',target:'The client will practise longer functional phrases during structured or play-based activities.',techniques:['Language expansion','Recasting','Modeling','Parallel talk'],activities:['Expand one-word requests','Describe pictures','Pretend play','Complete familiar phrases']},
+{name:'Speech sound production',target:'The client will practise the selected target sound at a clinician-defined level of complexity.',techniques:['Auditory model','Appropriate placement cues','Imitation','Structured practice'],activities:['Sound imitation','Syllable practice','Target-word practice','Picture naming']},
+{name:'Following instructions',target:'The client will follow selected instructions with the agreed level of prompting.',techniques:['Gesture cues','Visual supports','Simplified language','Graduated prompting'],activities:['One-step directions','Action games','Object placement','Routine-based instructions']},
+{name:'Social communication',target:'The client will practise a selected social communication skill in a structured or natural interaction.',techniques:['Modeling','Visual scripts','Prompting','Naturalistic teaching'],activities:['Turn-taking games','Greeting routines','Requesting help','Conversational play']}
+];
+let currentPage='home', selectedGoal=goals[0].name, selectedClient='all', selectedResponseTask='';
+const $=id=>document.getElementById(id);
+function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function clientName(id){return db.clients.find(c=>c.id===id)?.name||'Unassigned'}
+function showNotice(s){$('notice').textContent=s;$('notice').classList.remove('hidden');setTimeout(()=>$('notice').classList.add('hidden'),3000)}
+function header(title,subtitle,action=''){return '<div class="top"><div><h1>'+title+'</h1><div class="sub">'+subtitle+'</div></div>'+action+'</div>'}
+function button(label,action,cls='btn'){return '<button class="'+cls+'" data-action="'+action+'">'+label+'</button>'}
+function go(page){currentPage=page;document.querySelectorAll('[id^="page-"]').forEach(e=>e.classList.toggle('hidden',e.id!=='page-'+page));document.querySelectorAll('[data-page]').forEach(e=>e.classList.toggle('active',e.dataset.page===page));render()}
+function render(){renderHome();renderClients();renderSessions();renderGoals();renderDiary();renderProgress()}
+function renderHome(){
+const done=db.tasks.filter(t=>t.done).length;
+$('page-home').innerHTML=header('Good day 👋','Your speech rehabilitation workspace')+
+'<div class="grid three"><div class="card"><div class="muted">Client profiles</div><div class="metric">'+db.clients.length+'</div><div class="muted">Managed in this browser</div></div><div class="card"><div class="muted">Activities completed</div><div class="metric">'+done+'/'+db.tasks.length+'</div><div class="progress"><span style="width:'+(db.tasks.length?done/db.tasks.length*100:0)+'%"></span></div></div><div class="card"><div class="muted">Response records</div><div class="metric">'+db.responses.length+'</div><div class="muted">Recorded session responses</div></div></div>'+
+'<h2 class="section-title">Quick actions</h2><div class="grid"><div class="card"><h3>👥 Client management</h3><p class="muted">Create and maintain client profiles.</p>'+button('Manage clients','go-clients')+'</div><div class="card"><h3>🗓️ Therapy planning</h3><p class="muted">Assign goal-based activities and plan sessions.</p>'+button('Open sessions','go-sessions')+'</div><div class="card"><h3>✨ Suggested plans</h3><p class="muted">Explore goals, techniques, and activities.</p>'+button('Suggest a plan','go-goals')+'</div><div class="card"><h3>📝 Therapy diary</h3><p class="muted">Record observations and session notes.</p>'+button('Open diary','go-diary')+'</div></div>'+
+'<h2 class="section-title">Upcoming / planned activities</h2>'+taskList(db.tasks.slice(0,4),false);
+}
+function renderClients(){
+$('page-clients').innerHTML=header('Clients','Manage client profiles',button('+ Add client','add-client'))+
+'<input class="search" id="client-search" placeholder="Search clients by name or concern..." value="'+esc($('client-search')?.value||'')+'"><div class="list" id="client-list" style="margin-top:12px">'+clientItems(db.clients)+'</div>';
+}
+function clientItems(list){if(!list.length)return '<div class="empty">No matching clients. Add a profile to begin.</div>';return list.map(c=>'<div class="item"><div class="row between"><div><div class="item-title">'+esc(c.name)+'</div><p>'+esc(c.age)+' · '+esc(c.concern)+'</p></div><span class="pill">Client</span></div>'+(c.notes?'<p>'+esc(c.notes)+'</p>':'')+'<div class="item-actions"><button class="smallbtn" data-action="edit-client" data-id="'+c.id+'">Edit</button><button class="smallbtn" data-action="client-plan" data-id="'+c.id+'">Plan activity</button><button class="smallbtn danger" data-action="delete-client" data-id="'+c.id+'">Delete</button></div></div>').join('')}
+function taskList(list,controls=true){if(!list.length)return '<div class="empty">No activities yet. Add one in Sessions.</div>';return '<div class="list">'+list.map(t=>'<div class="item"><div class="checkrow"><input aria-label="Mark completed" type="checkbox" data-action="toggle-task" data-id="'+t.id+'" '+(t.done?'checked':'')+'><div style="flex:1"><div class="item-title">'+esc(t.title)+'</div><p>'+esc(t.goal)+' · '+esc(t.duration)+' min · '+esc(clientName(t.clientId))+'</p></div><span class="pill">'+(t.done?'Completed':'Planned')+'</span></div>'+(controls?'<div class="item-actions"><button class="smallbtn" data-action="record-task" data-id="'+t.id+'">Record response</button><button class="smallbtn danger" data-action="delete-task" data-id="'+t.id+'">Remove</button></div>':'')+'</div>').join('')+'</div>'}
+function renderSessions(){
+$('page-sessions').innerHTML=header('Sessions & plan','Organize activities and mark completion',button('+ Add activity','add-task'))+
+'<div class="field"><label>Filter by client</label><select id="session-filter"><option value="all">All clients</option>'+db.clients.map(c=>'<option value="'+c.id+'" '+(selectedClient===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')+'</select></div>'+
+taskList(db.tasks.filter(t=>selectedClient==='all'||t.clientId===selectedClient),true);
+}
+function renderGoals(){
+const g=goals.find(x=>x.name===selectedGoal)||goals[0];
+$('page-goals').innerHTML=header('Goal suggestions','Review and personalize before adding to a plan')+
+'<div class="field"><label>Communication goal</label><select id="goal-select">'+goals.map(x=>'<option '+(x.name===selectedGoal?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></div>'+
+'<div class="card"><span class="pill">Suggested goal</span><h2 style="margin-top:10px">'+esc(g.name)+'</h2><p>'+esc(g.target)+'</p><div class="muted">Suggested techniques</div><div class="actions">'+g.techniques.map(x=>'<span class="pill">'+esc(x)+'</span>').join('')+'</div><h3 class="section-title">Suggested activities</h3>'+g.activities.map((a,i)=>'<div class="item row between"><div><div class="item-title">'+esc(a)+'</div><p>Goal: '+esc(g.name)+'</p></div>'+button('Add','add-suggested:'+i,'btn secondary')+'</div>').join('')+'<p class="footnote">Suggestions are examples, not prescriptions. A qualified clinician should select the target, criteria, prompting level, and materials.</p></div>';
+}
+function renderDiary(){
+$('page-diary').innerHTML=header('Therapy diary','Session notes and response records',button('+ Add diary note','add-diary'))+
+'<h2 class="section-title">Response records</h2>'+(db.responses.length?'<div class="list">'+db.responses.slice().reverse().map(r=>'<div class="item"><div class="row between"><div class="item-title">'+esc(r.activity)+'</div><span class="pill">'+esc(r.response)+'</span></div><p>'+esc(clientName(r.clientId))+' · Prompt: '+esc(r.prompt)+(r.trials?' · Trials: '+esc(r.trials):'')+'</p>'+(r.notes?'<p>'+esc(r.notes)+'</p>':'')+'<p>'+esc(r.date)+'</p></div>').join('')+'</div>':'<div class="empty">No responses recorded yet.</div>')+
+'<h2 class="section-title">Diary notes</h2>'+(db.diary.length?'<div class="list">'+db.diary.slice().reverse().map(n=>'<div class="item"><div class="item-title">'+esc(n.title)+' · '+esc(clientName(n.clientId))+'</div><p>'+esc(n.date)+'</p><p>'+esc(n.note)+'</p></div>').join('')+'</div>':'<div class="empty">No diary notes yet.</div>');
+}
+function renderProgress(){
+const done=db.tasks.filter(t=>t.done).length, ratio=db.tasks.length?Math.round(done/db.tasks.length*100):0;
+$('page-progress').innerHTML=header('Progress','Activity completion and recorded responses')+
+'<div class="grid three"><div class="card"><div class="muted">Activities completed</div><div class="metric">'+done+'/'+db.tasks.length+'</div></div><div class="card"><div class="muted">Completion</div><div class="metric">'+ratio+'%</div><div class="progress"><span style="width:'+ratio+'%"></span></div></div><div class="card"><div class="muted">Responses recorded</div><div class="metric">'+db.responses.length+'</div></div></div>'+
+'<h2 class="section-title">Activity status</h2>'+taskList(db.tasks,false)+'<p class="footnote">Completion is a management measure, not a measure of clinical improvement. Accuracy should be calculated only from trials actually recorded.</p>';
+}
+function clientOptions(id){return db.clients.map(c=>'<option value="'+c.id+'" '+(id===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')}
+function modalForm(title,body,submitLabel,onSubmit){const wrap=document.createElement('div');wrap.style.cssText='position:fixed;inset:0;background:#10252288;display:grid;place-items:center;padding:16px;z-index:10';wrap.innerHTML='<div class="card" style="width:min(520px,100%);max-height:90vh;overflow:auto"><div class="row between"><h2>'+title+'</h2><button class="smallbtn" id="modal-close">✕</button></div><form id="modal-form">'+body+'<div class="actions"><button class="btn" type="submit">'+submitLabel+'</button><button class="btn ghost" type="button" id="modal-cancel">Cancel</button></div></form></div>';document.body.appendChild(wrap);const close=()=>wrap.remove();wrap.querySelector('#modal-close').onclick=close;wrap.querySelector('#modal-cancel').onclick=close;wrap.querySelector('form').onsubmit=e=>{e.preventDefault();if(onSubmit(new FormData(e.target))!==false)close()};}
+function field(name,label,value='',placeholder='',type='text'){return '<div class="field"><label>'+label+'</label><input name="'+name+'" type="'+type+'" value="'+esc(value)+'" placeholder="'+esc(placeholder)+'" '+(name==='name'||name==='age'||name==='concern'?'required':'')+'></div>'}
+function addClient(id=null){const old=id?db.clients.find(c=>c.id===id):null;modalForm(old?'Edit client':'Add client',field('name','Client name or code',old?.name||'','Enter name or code')+field('age','Age',old?.age||'','e.g. 5 years')+field('concern','Primary communication concern',old?.concern||'','Management note only')+'<div class="field"><label>Additional notes (optional)</label><textarea name="notes">'+esc(old?.notes||'')+'</textarea></div>', 'Save client',f=>{const c={name:f.get('name').trim(),age:f.get('age').trim(),concern:f.get('concern').trim(),notes:f.get('notes').trim()};if(old)Object.assign(old,c);else db.clients.push({id:'c'+Date.now(),...c});save();render();showNotice('Client profile saved.');});}
+function addTask(preset=null,clientId=null){modalForm('Add activity',field('title','Activity name',preset?.title||'','e.g. Picture naming')+'<div class="field"><label>Client</label><select name="clientId">'+clientOptions(clientId||db.clients[0]?.id)+'</select></div><div class="field"><label>Communication goal</label><select name="goal">'+goals.map(g=>'<option '+(g.name===(preset?.goal||selectedGoal)?'selected':'')+'>'+esc(g.name)+'</option>').join('')+'</select></div>'+field('duration','Duration (minutes)',preset?.duration||10,'10','number'),'Add to plan',f=>{db.tasks.push({id:'t'+Date.now(),clientId:f.get('clientId'),title:f.get('title').trim(),goal:f.get('goal'),duration:Math.max(1,Number(f.get('duration'))||10),done:false});save();render();showNotice('Activity added to session plan.');});}
+function recordTask(id){const t=db.tasks.find(x=>x.id===id);if(!t)return;modalForm('Record response', '<p class="muted">'+esc(t.title)+' · '+esc(clientName(t.clientId))+'</p><div class="field"><label>Response</label><select name="response"><option>Correct</option><option>Incorrect</option><option>Prompted</option><option>Not attempted</option></select></div><div class="field"><label>Prompt level</label><select name="prompt"><option>Independent</option><option>Verbal</option><option>Gesture</option><option>Visual</option><option>Model</option><option>Other</option></select></div>'+field('trials','Trial count (optional)', '', 'e.g. 4/5')+'<div class="field"><label>Notes (optional)</label><textarea name="notes" placeholder="Record observed response without guessing."></textarea></div>', 'Save response',f=>{db.responses.push({id:'r'+Date.now(),clientId:t.clientId,activity:t.title,response:f.get('response'),prompt:f.get('prompt'),trials:f.get('trials').trim(),notes:f.get('notes').trim(),date:new Date().toLocaleDateString()});save();render();showNotice('Response saved.');});}
+function addDiary(){modalForm('Add diary note','<div class="field"><label>Client</label><select name="clientId">'+clientOptions(db.clients[0]?.id)+'</select></div>'+field('title','Session title','','e.g. Language session')+'<div class="field"><label>Session note</label><textarea name="note" required placeholder="What was practised? Record observed responses and prompts."></textarea></div>','Save note',f=>{db.diary.push({id:'d'+Date.now(),clientId:f.get('clientId'),title:f.get('title').trim()||'Therapy session',note:f.get('note').trim(),date:new Date().toLocaleDateString()});save();render();showNotice('Diary note saved.');});}
+document.addEventListener('click',e=>{
+const nav=e.target.closest('[data-page]');if(nav){go(nav.dataset.page);return}
+const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action,id=b.dataset.id;
+if(a.startsWith('go-'))go(a.slice(3));
+else if(a==='add-client')addClient();
+else if(a==='edit-client')addClient(id);
+else if(a==='delete-client'){if(confirm('Delete this client and their planned activities?')){db.clients=db.clients.filter(c=>c.id!==id);db.tasks=db.tasks.filter(t=>t.clientId!==id);save();render();showNotice('Client deleted.')}} 
+else if(a==='client-plan'){const c=db.clients.find(c=>c.id===id);go('sessions');selectedClient=id;renderSessions();addTask(null,id)}
+else if(a==='add-task')addTask();
+else if(a==='delete-task'){db.tasks=db.tasks.filter(t=>t.id!==id);save();render()}
+else if(a==='record-task')recordTask(id);
+else if(a==='add-diary')addDiary();
+else if(a.startsWith('add-suggested:')){const g=goals.find(x=>x.name===selectedGoal);addTask({title:g.activities[Number(a.split(':')[1])],goal:g.name,duration:10})}
+});
+document.addEventListener('change',e=>{
+if(e.target.id==='goal-select'){selectedGoal=e.target.value;renderGoals()}
+if(e.target.id==='session-filter'){selectedClient=e.target.value;renderSessions()}
+if(e.target.dataset.action==='toggle-task'){const t=db.tasks.find(t=>t.id===e.target.dataset.id);if(t){t.done=e.target.checked;save();render();}}
+});
+document.addEventListener('input',e=>{if(e.target.id==='client-search'){const q=e.target.value.toLowerCase();const list=db.clients.filter(c=>(c.name+' '+c.concern+' '+c.age).toLowerCase().includes(q));const el=$('client-list');if(el)el.innerHTML=clientItems(list)}});
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+go('home');
+</script>
+</body>
+</html>
