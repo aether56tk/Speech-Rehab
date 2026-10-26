@@ -119,7 +119,7 @@ function normalizeWorkspace(value){
  const source=value&&typeof value==="object"?value:{};
  return {
   clients:Array.isArray(source.clients)?source.clients.filter(x=>x&&typeof x==="object").map(x=>({id:String(x.id||""),name:String(x.name||""),age:String(x.age||""),concern:String(x.concern||""),notes:String(x.notes||"")})).filter(x=>x.id&&x.name):[],
-  tasks:Array.isArray(source.tasks)?source.tasks.filter(x=>x&&typeof x==="object").map(x=>({id:String(x.id||""),clientId:String(x.clientId||""),title:String(x.title||""),goal:String(x.goal||""),technique:String(x.technique||""),duration:Math.max(1,Number(x.duration)||10),dueDate:String(x.dueDate||""),done:Boolean(x.done)})).filter(x=>x.id&&x.title):[],
+  tasks:Array.isArray(source.tasks)?source.tasks.filter(x=>x&&typeof x==="object").map(x=>({id:String(x.id||""),clientId:String(x.clientId||""),title:String(x.title||""),goal:String(x.goal||""),technique:String(x.technique||""),duration:Math.max(1,Number(x.duration)||10),dueDate:safeDueDate(x.dueDate),done:Boolean(x.done)})).filter(x=>x.id&&x.title):[],
   responses:Array.isArray(source.responses)?source.responses.filter(x=>x&&typeof x==="object").map(x=>({id:String(x.id||""),clientId:String(x.clientId||""),activity:String(x.activity||""),response:String(x.response||""),prompt:String(x.prompt||""),trials:String(x.trials||""),notes:String(x.notes||""),date:String(x.date||"")})).filter(x=>x.activity):[],
   diary:Array.isArray(source.diary)?source.diary.filter(x=>x&&typeof x==="object").map(x=>({id:String(x.id||""),clientId:String(x.clientId||""),title:String(x.title||"Therapy session"),note:String(x.note||""),date:String(x.date||"")})).filter(x=>x.note):[]
  };
@@ -151,6 +151,23 @@ let currentPage='home', selectedGoal=goals[0].name, selectedClient='all', select
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function clientName(id){return db.clients.find(c=>c.id===id)?.name||'Unassigned'}
+function safeDueDate(value){
+ const date=String(value||'').trim();
+ if(!date)return '';
+ const match=date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+ if(!match)return '';
+ const year=Number(match[1]),month=Number(match[2]),day=Number(match[3]);
+ if(year<2000||year>2100)return '';
+ const parsed=new Date(Date.UTC(year,month-1,day));
+ if(parsed.getUTCFullYear()!==year||parsed.getUTCMonth()!==month-1||parsed.getUTCDate()!==day)return '';
+ return date;
+}
+function displayDueDate(value){
+ const date=safeDueDate(value);
+ if(!date)return '';
+ const [year,month,day]=date.split('-');
+ return day+'/'+month+'/'+year;
+}
 function showNotice(s){$('notice').textContent=s;$('notice').classList.remove('hidden');setTimeout(()=>$('notice').classList.add('hidden'),3000)}
 function header(title,subtitle,action=''){return '<div class="top"><div><h1>'+title+'</h1><div class="sub">'+subtitle+'</div></div>'+action+'</div>'}
 function button(label,action,cls='btn'){return '<button class="'+cls+'" data-action="'+action+'">'+label+'</button>'}
@@ -220,7 +237,7 @@ function clientDetailHtml(id){
  '<h3 class="section-title">Therapy diary</h3>'+(notes.length?'<div class="list">'+notes.map(n=>'<div class="item"><strong>'+esc(n.title)+'</strong><p>'+esc(n.date)+'</p><p>'+esc(n.note)+'</p></div>').join('')+'</div>':'<div class="empty">No diary notes for this client yet.</div>')+
  '<div class="actions"><button class="btn ghost" data-action="add-diary-client" data-id="'+esc(id)+'">+ Add diary note</button></div></section>';
 }
-function taskList(list,controls=true){if(!list.length)return '<div class="empty">No activities yet. Add one in Sessions.</div>';return '<div class="list">'+list.map(t=>'<div class="item"><div class="checkrow"><input aria-label="Mark completed" type="checkbox" data-action="toggle-task" data-id="'+t.id+'" '+(t.done?'checked':'')+'><div style="flex:1"><div class="item-title">'+esc(t.title)+'</div><p>'+esc(t.goal)+' · '+esc(t.duration)+' min · '+esc(clientName(t.clientId))+(t.dueDate?' · Due: '+esc(t.dueDate):'')+'</p>'+(t.technique?'<p>Technique: '+esc(t.technique)+'</p>':'')+'</div><span class="pill">'+(t.done?'Completed':'Planned')+'</span></div>'+(controls?'<div class="item-actions"><button class="smallbtn" data-action="record-task" data-id="'+t.id+'">Record response</button><button class="smallbtn danger" data-action="delete-task" data-id="'+t.id+'">Remove</button></div>':'')+'</div>').join('')+'</div>'}
+function taskList(list,controls=true){if(!list.length)return '<div class="empty">No activities yet. Add one in Sessions.</div>';return '<div class="list">'+list.map(t=>'<div class="item"><div class="checkrow"><input aria-label="Mark completed" type="checkbox" data-action="toggle-task" data-id="'+t.id+'" '+(t.done?'checked':'')+'><div style="flex:1"><div class="item-title">'+esc(t.title)+'</div><p>'+esc(t.goal)+' · '+esc(t.duration)+' min · '+esc(clientName(t.clientId))+(safeDueDate(t.dueDate)?' · Due: '+esc(displayDueDate(t.dueDate)):'')+'</p>'+(t.technique?'<p>Technique: '+esc(t.technique)+'</p>':'')+'</div><span class="pill">'+(t.done?'Completed':'Planned')+'</span></div>'+(controls?'<div class="item-actions"><button class="smallbtn" data-action="record-task" data-id="'+t.id+'">Record response</button><button class="smallbtn danger" data-action="delete-task" data-id="'+t.id+'">Remove</button></div>':'')+'</div>').join('')+'</div>'}
 function renderSessions(){
 $('page-sessions').innerHTML=header('Sessions & plan','Organize activities and mark completion',button('+ Add activity','add-task'))+
 '<div class="field"><label>Filter by client</label><select id="session-filter"><option value="all">All clients</option>'+db.clients.map(c=>'<option value="'+c.id+'" '+(selectedClient===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')+'</select></div>'+
