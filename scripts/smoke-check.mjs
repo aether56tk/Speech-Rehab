@@ -8,7 +8,8 @@ new Function(scriptMatch[1]);
 console.log('PASS: app JavaScript parses');
 const clinicJs = readFileSync(new URL('../clinic.js', import.meta.url), 'utf8');
 new Function(clinicJs);
-console.log('PASS: clinic workspace JavaScript parses');
+for (const marker of ['function renderClinicTools', 'create_speech_rehab_invitation', 'accept_speech_rehab_invitation']) assert.ok(clinicJs.includes(marker), 'missing clinic contract: ' + marker);
+console.log('PASS: clinic workspace JavaScript parses and role-based flows are present');
 
 const required = [
   'function importBackup()',
@@ -20,7 +21,6 @@ const required = [
   'function requireClients()',
   'function exportResponsesCsv()',
   'function recordTask(id)',
-  'function addDiary()',
   'field(\'technique\',\'Technique / cueing approach (optional)\'',
   'technique:String(x.technique||\'\')',
   'function addDiary(clientId=null)',
@@ -35,9 +35,6 @@ const required = [
   'async function applySession(session)',
   'SUPABASE_PUBLISHABLE_KEY',
   "from('user_workspaces').upsert",
-  'function renderClinicTools',
-  'create_speech_rehab_invitation',
-  'accept_speech_rehab_invitation',
 ];
 for (const marker of required) assert.ok(html.includes(marker), 'missing app contract: ' + marker);
 console.log('PASS: backup, client profiles, session, response, diary, auth, and cloud-sync contracts are present');
