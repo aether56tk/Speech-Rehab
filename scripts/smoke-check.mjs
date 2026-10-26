@@ -27,9 +27,14 @@ const required = [
   'function editDiary(id)',
   "else if(a==='delete-response')",
   "else if(a==='delete-diary')",
+  'id="auth-gate"',
+  'async function syncWorkspace()',
+  'async function applySession(session)',
+  'SUPABASE_PUBLISHABLE_KEY',
+  "from('user_workspaces').upsert",
 ];
 for (const marker of required) assert.ok(html.includes(marker), 'missing app contract: ' + marker);
-console.log('PASS: backup, client deletion, session, response, and diary contracts are present');
+console.log('PASS: backup, client profiles, session, response, diary, auth, and cloud-sync contracts are present');
 
 assert.ok(html.includes('localStorage'), 'prototype persistence boundary should be explicit in source');
 assert.ok(html.includes('serviceWorker.register'), 'PWA service worker should be registered');
